@@ -1,0 +1,33 @@
+﻿@page "/login"
+@model MigraineBuddyConvertor.Pages.LoginModel
+@using MigraineBuddyConvertor.Data
+@using Microsoft.AspNetCore.Components.Authorization
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject NavigationManager NavigationManager
+
+
+<EditForm Model="@_user" OnValidSubmit="HandleValidSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <InputText id="username" @bind-Value="_user.Username" placeholder="Username" />
+    <InputText id="password" @bind-Value="_user.Password" placeholder="Password" type="password" />
+
+    <button type="submit">Log in</button>
+</EditForm>
+
+@code {
+    private PainUser _user = new();
+
+    private async void HandleValidSubmit()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (user.Identity is { IsAuthenticated: true })
+        {
+            NavigationManager.NavigateTo("/");
+        }
+    }
+
+}

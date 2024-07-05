@@ -1,0 +1,77 @@
+﻿@page "/"
+@using MigraineBuddyConvertor.Data
+
+<PageTitle>Index</PageTitle>
+
+<h1 align="center">MigraineBuddy Export Converter</h1>
+
+<h3>Please select a csv file to convert</h3>
+
+<InputFile OnChange="@OnInputFileChange" accept=".csv"/>
+
+@if (_file != null)
+{
+    <p>File Name: @_file.Name</p>
+    <p>File Size: @_file.Size bytes</p>
+    <p>First Pain Record:
+        @if (_firstPainRecord != null)
+        {
+            @_firstPainRecord.Started.ToString("D")
+        }
+    </p>
+    <p>Last Pain Record:
+        @if (_lastPainRecord != null)
+        {
+            @_lastPainRecord.Started.ToString("D")
+        }
+    </p>
+    <a id="exportPdf" class="btn btn-primary" href="/downloadPdf" download="NHS.pdf" role="button" target="_top">Export to PDF</a>
+}
+
+@if (_painRecords != null)
+{
+    <table class="table">
+        <thead>
+        <tr>
+            <th>Started</th>
+            <th>Lasted</th>
+            <th>Helpful Medication</th>
+            <th>Pain Level</th>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach (var record in _painRecords)
+        {
+            <tr>
+                <td>@record.Started</td>
+                <td>@record.Lasted</td>
+                <td>@record.HelpfulMedication</td>
+                <td>@record.PainLevel</td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}
+
+
+@code {
+    private PainRecord? _firstPainRecord;
+    private PainRecord? _lastPainRecord;
+    private List<PainRecord>? _painRecords;
+    private IBrowserFile? _file;
+
+    [Inject]
+    public IPainRecordService PainRecordService { get; set; }
+
+    private async Task OnInputFileChange(InputFileChangeEventArgs e)
+    {
+        _file = e.File;
+
+        _painRecords = await PainRecordService.ImportPainRecords(_file);
+        _firstPainRecord =  PainRecordService.GetFirstPainRecord();
+        _lastPainRecord =  PainRecordService.GetLastPainRecord();
+        StateHasChanged();
+    }
+
+
+}
